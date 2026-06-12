@@ -48,6 +48,12 @@ header.top .seal{
   font-family:Georgia,serif;font-weight:bold;color:var(--accent);font-size:18px;
   transform:rotate(-8deg);flex-shrink:0;
 }
+.shop-logo-img {
+  max-height: 45px;
+  max-width: 180px;
+  object-fit: contain;
+  border-radius: 6px;
+}
 header.top p.tag{margin:4px 0 0;color:var(--accent);font-size:14px;font-weight:500;letter-spacing:0.5px}
 .iconbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .iconbtn{
@@ -78,7 +84,8 @@ header.top p.tag{margin:4px 0 0;color:var(--accent);font-size:14px;font-weight:5
 .progress-bar-fill { background: linear-gradient(90deg, var(--accent), var(--good)); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
 
 .month-box { margin-top: 15px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
-.month-box h3 { margin: 0 0 12px; font-family: Georgia, serif; font-size: 17px; font-weight: normal; color: var(--accent); }
+.month-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+.month-box h3 { margin: 0; font-family: Georgia, serif; font-size: 17px; font-weight: normal; color: var(--accent); }
 .month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 .month-card { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .month-name { font-weight: bold; font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 6px; color: var(--ink); }
@@ -163,6 +170,32 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 .step-number { background:var(--accent); color:var(--accent-ink); border-radius:50%; width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; margin-right:8px; }
 .code-block-container { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:12px; margin:10px 0; position:relative; }
 .code-block-container pre { margin:0; font-family:monospace; font-size:12px; color:var(--good); overflow-x:auto; white-space: pre-wrap; word-wrap: break-word; max-height:150px; }
+
+/* --- PRINT / INVOICE MODAL SPECIFIC --- */
+.invoice-modal { max-width: 750px; background: #fff; color: #000; padding: 30px; border-radius: 8px; }
+.invoice-print-area { font-family: 'Segoe UI', Arial, sans-serif; color: #222; }
+.inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #223A33; padding-bottom: 15px; margin-bottom: 20px; }
+.inv-title { font-family: Georgia, serif; font-size: 26px; color: #142523; margin: 0; font-weight: bold; }
+.inv-meta { text-align: right; font-size: 13px; color: #555; line-height: 1.4; }
+.inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; font-size: 14px; }
+.inv-to { border: 1px solid #ddd; padding: 12px; border-radius: 6px; background: #f9f9f9; }
+.inv-to h4 { margin: 0 0 6px; color: #142523; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+.inv-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+.inv-table th { background: #142523; color: #fff; text-align: left; padding: 10px; font-size: 13px; text-transform: uppercase; }
+.inv-table td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+.inv-summary { width: 40%; margin-left: auto; font-size: 14px; }
+.inv-summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #ddd; }
+.inv-summary-row.final { border-bottom: 2px double #142523; font-weight: bold; font-size: 16px; color: #142523; padding: 10px 0; }
+.inv-footer { text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 15px; margin-top: 30px; }
+
+/* Print Overrides */
+@media print {
+  body * { visibility: hidden; }
+  #printModalOverlay, #printModalOverlay * { visibility: visible; }
+  #printModalOverlay { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: white; padding: 0; margin: 0; }
+  .close-modal, .no-print-btn { display: none !important; }
+  .invoice-modal { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -170,7 +203,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 
 <header class="top">
   <div>
-    <h1><span class="seal">₹</span><span id="shopNameDisplay">Apni Dukaan</span></h1>
+    <h1 id="logoContainer"><span class="seal">₹</span><span id="shopNameDisplay">Apni Dukaan</span></h1>
     <p class="tag">Digital Ledger System</p>
     <div id="sync-indicator" class="drive-status" style="color:var(--accent)">🟢 Local Storage Active (Offline)</div>
   </div>
@@ -185,11 +218,24 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 <div class="config-box" id="configBox" style="display:none;">
   <h4 style="margin:0 0 12px; color:var(--accent)">⚙️ Software Settings & Full Auto Sync</h4>
   
-  <div style="margin-bottom: 12px;">
-    <label class="field-label" style="margin-top:0;">Dukaan / Business Ka Naam</label>
-    <div style="display:flex; gap:8px;">
-      <input id="shopNameInput" placeholder="e.g. Dhisle Hardware & Traders" style="font-size:13px; padding:8px;">
-      <button class="btn btn-accent" onclick="saveShopName()" style="padding:4px 12px;">Save Name</button>
+  <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;">
+    <div>
+      <label class="field-label" style="margin-top:0;">Dukaan / Business Ka Naam</label>
+      <div style="display:flex; gap:8px;">
+        <input id="shopNameInput" placeholder="e.g. Dhisle Hardware & Traders" style="font-size:13px; padding:8px;">
+        <button class="btn btn-accent" onclick="saveShopName()" style="padding:4px 12px;">Save Name</button>
+      </div>
+    </div>
+    
+    <div>
+      <label class="field-label" style="margin-top:0;">Dukaan Ka Logo (Upload Image)</label>
+      <div style="display:flex; gap:8px; align-items: center;">
+        <label class="btn btn-info" style="margin:0; display:inline-block; cursor:pointer; text-align:center;">
+          🖼️ Choose Logo Image
+          <input type="file" id="logoUploadInput" accept="image/*" onchange="uploadLogo(event)" style="display:none">
+        </label>
+        <button class="btn btn-bad" onclick="removeLogo()" id="removeLogoBtn" style="padding:10px 14px; display:none;">🗑️ Remove Logo</button>
+      </div>
     </div>
   </div>
 
@@ -225,7 +271,10 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 </div>
 
 <div class="month-box">
-  <h3>📅 Monthly Analysis (Mahine ka Hisaab)</h3>
+  <div class="month-header">
+    <h3>📅 Monthly Analysis (Mahine ka Hisaab)</h3>
+    <button class="btn btn-info" onclick="printMonthlyReport()" style="padding: 5px 12px; font-size: 12px;">🖨️ Print Report</button>
+  </div>
   <div class="month-grid" id="month-grid"></div>
 </div>
 
@@ -311,7 +360,7 @@ function doGet(e) {
       <ul style="font-size:13px; color:var(--muted); margin:5px 0 5px 32px; padding-left:15px; line-height:1.6;">
         <li>Top Right me <b>Deploy -> New Deployment</b> par click karein.</li>
         <li>Gear icon (⚙️) par jakar <b>Web App</b> select karein.</li>
-        <li><b>Who has access</b> ko badal kar <b>"Anyone"</b> karein aur Deploy daba dein.</li>
+        <li><b>Who has access</b> ko badal kar <b>"Anyone"</b> karein aur Deploy daba edin.</li>
         <li>Wahan se milne wale lambe se Web App URL link ko copy karke is App ke upar <b>⚙️ Settings & Cloud</b> me dakar save kar dein!</li>
       </ul>
     </div>
@@ -322,10 +371,22 @@ function doGet(e) {
   </div>
 </div>
 
+<div class="modal-overlay" id="printModalOverlay" style="display:none;">
+  <div class="modal-box invoice-modal">
+    <button class="close-modal no-print-btn" onclick="closePrintModal()">×</button>
+    <div id="printContainer" class="invoice-print-area"></div>
+    <div style="text-align:right; margin-top:20px;" class="no-print-btn">
+      <button class="btn btn-ghost" onclick="closePrintModal()" style="color:#333; border-color:#ccc; margin-right:8px;">Close</button>
+      <button class="btn btn-good" onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let data = [];
 let recovered = 0;
 let shopName = localStorage.getItem('dhisle_shop_name') || 'Dhisle Hardware & Traders';
+let shopLogo = localStorage.getItem('dhisle_shop_logo') || '';
 let cloudScriptUrl = localStorage.getItem('dhisle_cloud_url') || '';
 
 const FILTERS=[{id:'all',label:'All Accounts'},{id:'pending',label:'Pending'},{id:'overdue',label:'Overdue'},{id:'paid',label:'Fully Paid'}];
@@ -352,9 +413,10 @@ function save() {
  }
 }
 
-// Modal Toggle Logic
 function openSetupModal() { document.getElementById('setupModal').style.display = 'flex'; }
 function closeSetupModal() { document.getElementById('setupModal').style.display = 'none'; }
+
+function closePrintModal() { document.getElementById('printModalOverlay').style.display = 'none'; }
 
 function copyGoogleCode() {
   let codeText = document.getElementById('gsCode').innerText;
@@ -375,6 +437,7 @@ function toggleConfig() {
   let box = document.getElementById('configBox');
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
   document.getElementById('shopNameInput').value = shopName;
+  document.getElementById('removeLogoBtn').style.display = shopLogo ? 'inline-block' : 'none';
   if(cloudScriptUrl) document.getElementById('scriptUrlInput').value = cloudScriptUrl;
 }
 
@@ -383,10 +446,51 @@ function saveShopName() {
   if(!name) { alert("Naam khali nahi chodh sakte bhai!"); return; }
   localStorage.setItem('dhisle_shop_name', name);
   shopName = name;
-  document.getElementById('shopNameDisplay').innerText = shopName;
+  updateHeaderLogo();
   document.getElementById('footerShopName').innerText = shopName;
   alert("Dukaan ka naam badal gaya! 👍");
   render();
+}
+
+function uploadLogo(event) {
+  let file = event.target.files[0];
+  if (!file) return;
+  
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    let base64Img = e.target.result;
+    try {
+      localStorage.setItem('dhisle_shop_logo', base64Img);
+      shopLogo = base64Img;
+      updateHeaderLogo();
+      document.getElementById('removeLogoBtn').style.display = 'inline-block';
+      alert("Logo kamyabi se upload ho gaya! 🎉");
+    } catch (error) {
+      alert("Image size bohot bada hai bhai! Kripya choti size ki image lagayein.");
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  if (confirm("Kya aap sach me logo hatana chahte hain?")) {
+    localStorage.removeItem('dhisle_shop_logo');
+    shopLogo = '';
+    updateHeaderLogo();
+    document.getElementById('removeLogoBtn').style.display = 'none';
+    alert("Logo hata diya gaya hai.");
+  }
+}
+
+function updateHeaderLogo() {
+  let container = document.getElementById('logoContainer');
+  if (!container) return;
+  
+  if (shopLogo) {
+    container.innerHTML = `<img src="${shopLogo}" class="shop-logo-img" alt="${escapeAttr(shopName)}">`;
+  } else {
+    container.innerHTML = `<span class="seal">₹</span><span id="shopNameDisplay">${escapeHtml(shopName)}</span>`;
+  }
 }
 
 function saveScriptUrl() {
@@ -595,8 +699,196 @@ function renderMonthlyAnalysis() {
   gridEl.innerHTML = html;
 }
 
+// --- NEW FEATURE: GENERATE INDIVIDUAL INVOICE ---
+function generateInvoice(id) {
+  let idx = findIndex(id);
+  if(idx < 0) return;
+  let c = data[idx];
+  let bal = c.amount - c.paid;
+  let dateStr = new Date(c.createdAt).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+  let dueStr = c.due ? new Date(c.due.split('-')[0], c.due.split('-'-1), c.due.split('-')[2]).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+
+  let logoHtml = shopLogo ? `<img src="${shopLogo}" style="max-height:60px; max-width:200px; object-fit:contain; margin-bottom:5px;">` : `<h2 style="margin:0; font-family:Georgia,serif; color:#142523;">₹ ${escapeHtml(shopName)}</h2>`;
+
+  let historyRows = c.history.map((h, i) => {
+    let d = new Date(h.date).toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
+    return `<tr><td>${i+1}</td><td>Jama (Payment) — ${h.note || (h.type==='full'?'Full Settled':'Partial')}</td><td>${d}</td><td style="text-align:right; color:#5FCB9B;">-${fmt(h.amount)}</td></tr>`;
+  }).join('');
+
+  let html = `
+    <div class="inv-header">
+      <div>
+        ${logoHtml}
+        <div style="font-size:12px; color:#555; margin-top:5px;">Digital Ledger Udhar Invoice</div>
+      </div>
+      <div class="inv-meta">
+        <div class="inv-title" style="font-size:22px; letter-spacing:1px; color:#D9A455;">INVOICE / RECEIPT</div>
+        <div>Date Created: <b>${dateStr}</b></div>
+        <div>Due Date: <b>${dueStr}</b></div>
+        <div>Status: <b style="color:${bal <= 0 ? '#5FCB9B' : '#E2685A'}">${bal <= 0 ? 'FULLY PAID' : 'PENDING'}</b></div>
+      </div>
+    </div>
+    
+    <div class="inv-grid">
+      <div class="inv-to">
+        <h4>Billed To (Customer Detail)</h4>
+        <div style="font-weight:bold; font-size:16px;">${escapeHtml(c.name)}</div>
+        ${c.phone ? `<div>📞 Phone: ${c.phone}</div>` : ''}
+        ${c.village ? `<div>📍 Village: ${escapeHtml(c.village)}</div>` : ''}
+      </div>
+      <div class="inv-to" style="text-align: right; background: #142523; color: #fff; border-color: #142523;">
+        <h4 style="color: #9CB2AA;">Total Pending Balance</h4>
+        <div style="font-size: 28px; font-weight: bold; font-family: Georgia, serif; margin-top: 5px; color:#D9A455;">${fmt(bal)}</div>
+      </div>
+    </div>
+
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th style="width:8%">S.No</th>
+          <th>Description / Items Summary</th>
+          <th style="width:20%">Date</th>
+          <th style="width:22%; text-align:right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>
+            <b>Mool Udhar (Original Lent Amount)</b>
+            ${c.note ? `<div style="font-size:12px; color:#666; margin-top:3px; font-style:italic;">📦 Items: ${escapeHtml(c.note)}</div>` : ''}
+          </td>
+          <td>${dateStr}</td>
+          <td style="text-align:right; font-weight:bold;">${fmt(c.amount)}</td>
+        </tr>
+        ${historyRows}
+      </tbody>
+    </table>
+
+    <div class="inv-summary">
+      <div class="inv-summary-row"><span>Total Bill:</span><span>${fmt(c.amount)}</span></div>
+      <div class="inv-summary-row"><span style="color:#2e7d32;">Total Paid (Jama):</span><span style="color:#2e7d32;">-${fmt(c.paid)}</span></div>
+      <div class="inv-summary-row final"><span>Net Baki Amount:</span><span>${fmt(bal)}</span></div>
+    </div>
+
+    <div class="inv-footer">
+      <p>Thank you for your business! Kripya samay par udhar chukayein aur vishwas banaye rakhein. 🙏</p>
+      <div style="font-size:10px; color:#999; margin-top:10px;">Generated via ${escapeHtml(shopName)} Udhar Khata Ledger on ${new Date().toLocaleDateString('en-IN')}</div>
+    </div>
+  `;
+  
+  document.getElementById('printContainer').innerHTML = html;
+  document.getElementById('printModalOverlay').style.display = 'flex';
+}
+
+// --- NEW FEATURE: GENERATE MONTHLY PDF/PRINT REPORT ---
+function printMonthlyReport() {
+  if(data.length === 0) { alert("Report banane ke liye data hi nahi hai bhai!"); return; }
+
+  let months = {};
+  let totalLentOverall = 0;
+  let totalPaidOverall = 0;
+  let totalPendingOverall = 0;
+
+  data.forEach(c => {
+    let date = new Date(c.createdAt);
+    let monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    if(!months[monthKey]) months[monthKey] = { lent: 0, paid: 0, pending: 0, entries: [] };
+    let bal = c.amount - c.paid;
+    
+    months[monthKey].lent += c.amount; 
+    months[monthKey].paid += c.paid; 
+    months[monthKey].pending += bal;
+    months[monthKey].entries.push({ c, bal });
+
+    totalLentOverall += c.amount;
+    totalPaidOverall += c.paid;
+    totalPendingOverall += bal;
+  });
+
+  let logoHtml = shopLogo ? `<img src="${shopLogo}" style="max-height:55px; max-width:180px; object-fit:contain;">` : `<h2 style="margin:0; font-family:Georgia,serif; color:#142523;">₹ ${escapeHtml(shopName)}</h2>`;
+  
+  let reportHtml = `
+    <div class="inv-header">
+      <div>
+        ${logoHtml}
+        <div style="font-size:12px; color:#555; margin-top:5px;">Dukaan Ka Monthly Udhar Report Card</div>
+      </div>
+      <div class="inv-meta">
+        <div class="inv-title" style="font-size:20px; color:#142523;">FULL KHAATA STATEMENT</div>
+        <div>Report Date: <b>${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})}</b></div>
+        <div>Total Active Customers: <b>${data.length}</b></div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:25px; font-size:13px; text-align:center;">
+      <div style="background:#f4f4f4; padding:10px; border-radius:6px; border:1px solid #ddd;">
+        <span style="font-size:11px; color:#666; text-transform:uppercase;">Total Udhar Diya</span>
+        <div style="font-size:18px; font-weight:bold; margin-top:3px;">${fmt(totalLentOverall)}</div>
+      </div>
+      <div style="background:#e8f5e9; padding:10px; border-radius:6px; border:1px solid #c8e6c9;">
+        <span style="font-size:11px; color:#2e7d32; text-transform:uppercase;">Total Jama Hua (Recovered)</span>
+        <div style="font-size:18px; font-weight:bold; margin-top:3px; color:#2e7d32;">${fmt(totalPaidOverall)}</div>
+      </div>
+      <div style="background:#ffebee; padding:10px; border-radius:6px; border:1px solid #ffcdd2;">
+        <span style="font-size:11px; color:#c62828; text-transform:uppercase;">Market Me Baki Balance</span>
+        <div style="font-size:18px; font-weight:bold; margin-top:3px; color:#c62828;">${fmt(totalPendingOverall)}</div>
+      </div>
+    </div>
+  `;
+
+  Object.keys(months).forEach(mKey => {
+    let m = months[mKey];
+    reportHtml += `
+      <div style="margin-top:20px; border: 1px solid #142523; border-radius:6px; overflow:hidden;">
+        <div style="background:#142523; color:#fff; padding:8px 12px; font-weight:bold; display:flex; justify-content:between; font-size:14px;">
+          <div style="flex:1;">📅 Month: ${mKey}</div>
+          <div style="font-size:12px; color:#9CB2AA;">Lent: ${fmt(m.lent)} | Recv: ${fmt(m.paid)} | Pending: <span style="color:#D9A455; font-weight:bold;">${fmt(m.pending)}</span></div>
+        </div>
+        <table class="inv-table" style="margin-bottom:0; font-size:12px;">
+          <thead>
+            <tr style="background:#f9f9f9; color:#333;">
+              <th style="background:none; color:#333; padding:6px; font-size:12px; width:25%;">Customer</th>
+              <th style="background:none; color:#333; padding:6px; font-size:12px; width:20%;">Phone / Village</th>
+              <th style="background:none; color:#333; padding:6px; font-size:12px;">Note / Item Details</th>
+              <th style="background:none; color:#333; padding:6px; font-size:12px; text-align:right; width:15%;">Total Udhar</th>
+              <th style="background:none; color:#333; padding:6px; font-size:12px; text-align:right; width:15%;">Baki Status</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    m.entries.forEach(e => {
+      reportHtml += `
+        <tr>
+          <td style="padding:6px; font-weight:bold;">${escapeHtml(e.c.name)}</td>
+          <td style="padding:6px; color:#555;">${e.c.phone || '-'}${e.c.village ? ` (${escapeHtml(e.c.village)})` : ''}</td>
+          <td style="padding:6px; font-style:italic; color:#666;">${escapeHtml(e.c.note || '-')}</td>
+          <td style="padding:6px; text-align:right;">${fmt(e.c.amount)}</td>
+          <td style="padding:6px; text-align:right; font-weight:bold; color:${e.bal > 0 ? '#E2685A' : '#5FCB9B'};">${e.bal > 0 ? fmt(e.bal) : 'PAID ✅'}</td>
+        </tr>
+      `;
+    });
+
+    reportHtml += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  });
+
+  reportHtml += `
+    <div class="inv-footer" style="margin-top:40px;">
+      <p>© 2026 ${escapeHtml(shopName)} Digital Khata Ledger — Confidential Internal Report</p>
+    </div>
+  `;
+
+  document.getElementById('printContainer').innerHTML = reportHtml;
+  document.getElementById('printModalOverlay').style.display = 'flex';
+}
+
 function render(){
- document.getElementById('shopNameDisplay').innerText = shopName;
+ updateHeaderLogo();
  document.getElementById('footerShopName').innerText = shopName;
  renderMonthlyAnalysis();
  
@@ -663,7 +955,7 @@ function render(){
    let cleanDispDate = 'No due date';
    if(c.due) { let p = c.due.split('-'); cleanDispDate = new Date(p[0], p[1]-1, p[2]).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
 
-   html+=`<div class="cust"><div class="stamp ${info.cls}">${stampLabel}</div><div class="top-row"><div><h3>${escapeHtml(c.name)}</h3><p class="phone">${c.phone?'📞 '+c.phone:'No phone'}</p>${c.village?`<div class="village-tag">📍 ${escapeHtml(c.village)}</div>`:''}</div></div><div class="ledger"><div class="ledger-row total"><span>Total Udhar</span><b>${fmt(c.amount)}</b></div><div class="ledger-row paidrow"><span>Received Jama</span><b>${fmt(c.paid)}</b></div><div class="ledger-row balrow"><span>Baki Balance</span><b>${fmt(bal)}</b></div></div><div class="due-line">📅 Due: ${cleanDispDate}</div>${c.note?`<div class="note">📦 Items: ${escapeHtml(c.note)}</div>`:''}<div class="actions">${c.phone?`<a target="_blank" href="${waLink(c.phone,msg)}"><button class="btn btn-good">💬 WhatsApp</button></a>`:''}${bal>0?`<button class="btn btn-info" onclick="togglePartial('${c.id}')">Partial Pay</button>`:''}${bal>0?`<button class="btn btn-good" onclick="markPaid('${c.id}')">Mark Full Paid</button>`:''}<button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">✏ Edit</button><button class="btn btn-ghost" onclick="toggleHistory('${c.id}')">📜 History (${c.history.length})</button><button class="btn btn-bad" onclick="del('${c.id}')">🗑 Delete</button></div>${partialHtml}${editingHtml}${historyHtml}</div>`;
+   html+=`<div class="cust"><div class="stamp ${info.cls}">${stampLabel}</div><div class="top-row"><div><h3>${escapeHtml(c.name)}</h3><p class="phone">${c.phone?'📞 '+c.phone:'No phone'}</p>${c.village?`<div class="village-tag">📍 ${escapeHtml(c.village)}</div>`:''}</div></div><div class="ledger"><div class="ledger-row total"><span>Total Udhar</span><b>${fmt(c.amount)}</b></div><div class="ledger-row paidrow"><span>Received Jama</span><b>${fmt(c.paid)}</b></div><div class="ledger-row balrow"><span>Baki Balance</span><b>${fmt(bal)}</b></div></div><div class="due-line">📅 Due: ${cleanDispDate}</div>${c.note?`<div class="note">📦 Items: ${escapeHtml(c.note)}</div>`:''}<div class="actions"><button class="btn btn-accent" onclick="generateInvoice('${c.id}')">📄 Invoice</button>${c.phone?`<a target="_blank" href="${waLink(c.phone,msg)}"><button class="btn btn-good">💬 WhatsApp</button></a>`:''}${bal>0?`<button class="btn btn-info" onclick="togglePartial('${c.id}')">Partial Pay</button>`:''}${bal>0?`<button class="btn btn-good" onclick="markPaid('${c.id}')">Mark Full Paid</button>`:''}<button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">✏ Edit</button><button class="btn btn-ghost" onclick="toggleHistory('${c.id}')">📜 History (${c.history.length})</button><button class="btn btn-bad" onclick="del('${c.id}')">🗑 Delete</button></div>${partialHtml}${editingHtml}${historyHtml}</div>`;
   });
  }
 
@@ -684,6 +976,7 @@ let html=''; FILTERS.forEach(f=>{ html+=`<button class="pill ${filterMode===f.id
 document.getElementById('pills').innerHTML=html;
 
 updateVillageDropdown();
+updateHeaderLogo();
 render();
 autoPullOnStartup();
 </script>
