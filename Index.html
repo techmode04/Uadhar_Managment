@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Digital Udhar Khata — Universal V8</title>
+<style>
+:root{
+  --bg:#0E1A17;
+  --bg2:#142523;
+  --card:#1B2E29;
+  --card2:#223A33;
+  --line:#33493F;
+  --ink:#F3EFE6;
+  --muted:#9CB2AA;
+  --accent:#D9A455;
+  --accent-ink:#3A2A0E;
+  --good:#5FCB9B;
+  --good-ink:#0E2E22;
+  --bad:#E2685A;
+  --bad-ink:#3A1410;
+  --info:#7FB0D6;
+  --info-ink:#13293A;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(circle at 12% -8%, rgba(217,164,85,0.10), transparent 42%),
+    radial-gradient(circle at 100% 0%, rgba(95,203,155,0.06), transparent 40%),
+    linear-gradient(160deg,var(--bg),var(--bg2));
+  color:var(--ink);
+  min-height:100vh;
+}
+.wrap{max-width:1100px;margin:auto;padding:22px 16px 60px}
+
+header.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+header.top h1{
+  font-family:Georgia,'Iowan Old Style',serif;
+  font-size:28px;margin:0;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;color:var(--ink);
+}
+header.top .seal{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-family:Georgia,serif;font-weight:bold;color:var(--accent);font-size:18px;
+  transform:rotate(-8deg);flex-shrink:0;
+}
+header.top p.tag{margin:4px 0 0;color:var(--accent);font-size:14px;font-weight:500;letter-spacing:0.5px}
+.iconbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.iconbtn{
+  background:var(--card);border:1px solid var(--line);color:var(--ink);
+  border-radius:10px;padding:9px 13px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;transition:.15s;
+}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+.drive-status{font-size:12px;padding:6px 10px;border-radius:6px;background:var(--bg2);border:1px solid var(--line);display:inline-block;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat-card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;position:relative;overflow:hidden;
+}
+.stat-card .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.stat-card .stat{
+  font-family:Georgia,serif;font-size:24px;font-weight:bold;margin-top:6px;
+  font-variant-numeric:tabular-nums;
+}
+.stat-card.pending .stat{color:var(--bad)}
+.stat-card.recovered .stat{color:var(--good)}
+.stat-card.overdue .stat{color:var(--accent)}
+
+.progress-container { margin-top: 15px; background: var(--card); border: 1px solid var(--line); padding: 12px 16px; border-radius: var(--radius); }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.progress-bar-bg { background: var(--bg2); border-radius: 99px; height: 8px; overflow: hidden; border: 1px solid var(--line); }
+.progress-bar-fill { background: linear-gradient(90deg, var(--accent), var(--good)); height: 100%; width: 0%; transition: width 0.5s ease-in-out; }
+
+.month-box { margin-top: 15px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+.month-box h3 { margin: 0 0 12px; font-family: Georgia, serif; font-size: 17px; font-weight: normal; color: var(--accent); }
+.month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.month-card { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.month-name { font-weight: bold; font-size: 14px; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 6px; color: var(--ink); }
+.month-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; font-variant-numeric: tabular-nums; }
+.month-row span { color: var(--muted); }
+
+.card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; }
+.card h3{margin:0 0 12px;font-family:Georgia,serif;font-size:17px;font-weight:normal;color:var(--accent)}
+
+label.field-label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{
+  width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg2);color:var(--ink);font-size:14px;font-family:inherit;
+}
+input::placeholder,textarea::placeholder{color:#6e8079}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+
+.btn{ padding:10px 14px; border-radius:10px; border:1px solid transparent; font-size:13px; cursor:pointer; font-weight:600; transition:.15s; white-space:nowrap; }
+.btn:active{transform:scale(.97)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-good{background:var(--good);color:var(--good-ink)}
+.btn-bad{background:var(--bad);color:var(--bad-ink)}
+.btn-info{background:var(--info);color:var(--info-ink)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-block{width:100%;margin-top:10px;padding:12px}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}
+.controls input{flex:1;min-width:180px}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{ padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--muted); font-size:12px; cursor:pointer; text-transform:uppercase; letter-spacing:.5px; }
+.pill.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.controls select{width:auto;min-width:140px}
+
+.config-box { background: var(--card2); border: 1px dashed var(--line); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+.list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.cust{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; position:relative; overflow:hidden; }
+.cust .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-right:80px}
+.cust h3{margin:0;font-family:Georgia,serif;font-size:19px}
+.cust .phone{margin:3px 0 0;color:var(--muted);font-size:13px}
+
+.stamp{ position:absolute; top:14px; right:14px; border:2px dashed currentColor; border-radius:50%; width:78px; height:78px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px; font-weight:bold; letter-spacing:.5px; transform:rotate(-10deg); line-height:1.2; padding:4px; }
+.stamp.paid{color:var(--good)}
+.stamp.overdue{color:var(--bad)}
+.stamp.dueSoon{color:var(--accent)}
+.stamp.due{color:var(--info)}
+
+.ledger{margin-top:14px;border-top:1px dashed var(--line)}
+.ledger-row{ display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:14px; font-variant-numeric:tabular-nums; }
+.ledger-row b{font-family:Georgia,serif}
+.ledger-row.total b{color:var(--ink)}
+.ledger-row.paidrow b{color:var(--good)}
+.ledger-row.balrow b{color:var(--accent);font-size:17px}
+.due-line{margin-top:8px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.note{margin-top:8px;font-size:13px;color:var(--muted);font-style:italic;background:var(--bg2);padding:8px 10px;border-radius:8px}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.actions a{text-decoration:none}
+.inline-form{margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;border:1px solid var(--line)}
+.inline-form .row2{margin-bottom:0}
+.inline-form .actions{margin-top:10px}
+
+.history{margin-top:12px;background:var(--bg2);border-radius:10px;padding:10px 12px;border:1px solid var(--line)}
+.history h4{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:normal}
+.history-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:4px}
+.history-row:last-child{border-bottom:none}
+.history-row .amt{color:var(--good);font-variant-numeric:tabular-nums;font-weight:bold}
+.history-row .p-note{font-size:11px;color:var(--muted);width:100%;font-style:italic;margin-top:2px}
+
+.empty{text-align:center;padding:50px 20px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--radius);margin-top:14px;}
+footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1><span class="seal">₹</span><span id="shopNameDisplay">Apni Dukaan</span></h1>
+    <p class="tag">Digital Ledger System</p>
+    <div id="sync-indicator" class="drive-status" style="color:var(--accent)">🟢 Local Storage Active (Offline)</div>
+  </div>
+  <div class="iconbar">
+    <button class="iconbtn" onclick="toggleConfig()">⚙️ Setup & Settings</button>
+    <button class="iconbtn" onclick="exportData()">⬇ Export Backup</button>
+    <label class="iconbtn" style="margin:0">⬆ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    <button class="iconbtn" onclick="clearAll()">🗑 Reset</button>
+  </div>
+</header>
+
+<div class="config-box" id="configBox" style="display:none;">
+  <h4 style="margin:0 0 12px; color:var(--accent)">⚙️ Software Settings & Cloud Setup</h4>
+  
+  <div style="margin-bottom: 12px;">
+    <label class="field-label" style="margin-top:0;">Dukaan / Business Ka Naam</label>
+    <div style="display:flex; gap:8px;">
+      <input id="shopNameInput" placeholder="e.g. Dhisle Hardware & Traders" style="font-size:13px; padding:8px;">
+      <button class="btn btn-accent" onclick="saveShopName()" style="padding:4px 12px;">Save Name</button>
+    </div>
+  </div>
+
+  <div style="border-top: 1px dashed var(--line); margin-top:12px; padding-top:12px;">
+    <label class="field-label">Google Script Backup URL (Optional)</label>
+    <div style="display:flex; gap:8px;">
+      <input id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px; padding:8px;">
+      <button class="btn btn-good" onclick="saveScriptUrl()" style="padding:4px 12px;">Save URL</button>
+    </div>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button class="btn btn-info" onclick="syncWithCloud()" style="font-size:11px; padding:4px 10px;">🔄 Pull From Cloud</button>
+      <button class="btn btn-ghost" onclick="pushToCloud()" style="font-size:11px; padding:4px 10px;">📤 Push To Cloud</button>
+    </div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="stat-card pending"><div class="label">Total Pending</div><div class="stat" id="pending">₹0</div></div>
+  <div class="stat-card recovered"><div class="label">Recovered</div><div class="stat" id="recovered">₹0</div></div>
+  <div class="stat-card"><div class="label">Total Customers</div><div class="stat" id="customers">0</div></div>
+  <div class="stat-card overdue"><div class="label">Overdue Alerts</div><div class="stat" id="overdue">0</div></div>
+  <div class="stat-card"><div class="label">Total Lent</div><div class="stat" id="lent">₹0</div></div>
+</div>
+
+<div class="progress-container">
+  <div class="progress-label">
+    <span>Dukaan Ka Recovery Rate</span>
+    <span id="progress-percent">0%</span>
+  </div>
+  <div class="progress-bar-bg">
+    <div class="progress-bar-fill" id="progress-bar"></div>
+  </div>
+</div>
+
+<div class="month-box">
+  <h3>📅 Monthly Analysis (Mahine ka Hisaab)</h3>
+  <div class="month-grid" id="month-grid"></div>
+</div>
+
+<div class="card" style="margin-top:18px">
+  <h3>+ Naya Customer / Udhar Entry Jodo</h3>
+  <div class="row2">
+    <div><label class="field-label">Customer Name</label><input id="name" placeholder="Ramesh Bhai, Sonu Painter etc."></div>
+    <div><label class="field-label">Phone Number</label><input id="phone" placeholder="10-digit mobile number"></div>
+  </div>
+  <div class="row2">
+    <div><label class="field-label">Amount (₹)</label><input id="amount" type="number" placeholder="0"></div>
+    <div><label class="field-label">Due Date (Kab tak dega)</label><input id="due" type="date"></div>
+  </div>
+  <label class="field-label">Bill Item / Note (optional)</label>
+  <input id="note" placeholder="e.g., 5 Pipe, 2 Box Nails, Paint brush">
+  <button class="btn btn-accent btn-block" onclick="addCustomer()">Save Udhar Record</button>
+</div>
+
+<div class="controls">
+  <input id="search" placeholder="🔍 Search customer by name or phone..." oninput="render()">
+  <div class="pills" id="pills"></div>
+  <select id="sortMode" onchange="render()">
+    <option value="new">Newest Entries</option>
+    <option value="name">Name (A-Z)</option>
+    <option value="balance">Highest Balance Due</option>
+    <option value="due">Due Date (Soonest)</option>
+  </select>
+</div>
+
+<div id="list" class="list"></div>
+
+<footer class="foot"><span id="footerShopName">Apni Dukaan</span> © 2026 — Secure Offline First Ledger</footer>
+</div>
+
+<script>
+let data = [];
+let recovered = 0;
+let shopName = localStorage.getItem('dhisle_shop_name') || 'Dhisle Hardware & Traders';
+let cloudScriptUrl = localStorage.getItem('dhisle_cloud_url') || '';
+
+const FILTERS=[{id:'all',label:'All Accounts'},{id:'pending',label:'Pending'},{id:'overdue',label:'Overdue'},{id:'paid',label:'Fully Paid'}];
+let filterMode='all';
+let openPartial=new Set(); let openEdit=new Set(); let openHistory=new Set();
+
+loadLocalData();
+
+function loadLocalData(){
+ try {
+   let raw = localStorage.getItem('udhar_v3');
+   if(raw){
+    let parsed = JSON.parse(raw);
+    data = parsed.data || [];
+    recovered = Number(parsed.recovered || 0);
+   }
+ } catch(e) { console.error(e); }
+}
+
+function save() {
+ localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
+ if (cloudScriptUrl) { autoPushToCloud(); }
+}
+
+function toggleConfig() {
+  let box = document.getElementById('configBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('shopNameInput').value = shopName;
+  if(cloudScriptUrl) document.getElementById('scriptUrlInput').value = cloudScriptUrl;
+}
+
+function saveShopName() {
+  let name = document.getElementById('shopNameInput').value.trim();
+  if(!name) { alert("Naam khali nahi chodh sakte bhai!"); return; }
+  localStorage.setItem('dhisle_shop_name', name);
+  shopName = name;
+  document.getElementById('shopNameDisplay').innerText = shopName;
+  document.getElementById('footerShopName').innerText = shopName;
+  alert("Dukaan ka naam badal gaya! 👍");
+  render();
+}
+
+function saveScriptUrl() {
+  let url = document.getElementById('scriptUrlInput').value.trim();
+  localStorage.setItem('dhisle_cloud_url', url);
+  cloudScriptUrl = url;
+  render();
+  alert("Cloud URL Settings saved!");
+}
+
+// --- CLOUD SYNC ENGINE ---
+async function pushToCloud() {
+  if(!cloudScriptUrl) { alert("Pehle Google Script URL daalo bhai."); return; }
+  document.getElementById('sync-indicator').innerText = '📤 Pushing to Cloud...';
+  try {
+    await fetch(cloudScriptUrl, {
+      method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save', data: data, recovered: recovered })
+    });
+    document.getElementById('sync-indicator').innerText = '🟢 Data Backed Up!';
+    alert("Data cloud pe safe save ho gaya! ✅");
+  } catch(e) { alert("Backup failed!"); }
+}
+
+async function autoPushToCloud() {
+  if(!cloudScriptUrl) return;
+  try {
+    await fetch(cloudScriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save', data: data, recovered: recovered }) });
+  } catch(e) {}
+}
+
+async function syncWithCloud() {
+  if(!cloudScriptUrl) { alert("Pehle URL daalo bhai."); return; }
+  try {
+    let response = await fetch(cloudScriptUrl + '?action=get');
+    let resData = await response.json();
+    if(resData && resData.data) {
+      if(confirm("Cloud data load karein? Local overwrite ho jayega.")) {
+        data = resData.data; recovered = resData.recovered || 0;
+        localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
+        render();
+      }
+    }
+  } catch(e) { alert("Error pulling data!"); }
+}
+
+// --- STANDARD APP LOGIC ---
+function uid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function fmt(n){ return '₹'+Math.round(Number(n||0)).toLocaleString('en-IN'); }
+function cleanPhone(p){ return (p||'').replace(/\D/g,''); }
+function waLink(phone,msg){
+ let p=cleanPhone(phone); if(p.length===10) p='91'+p;
+ return `https://wa.me/${p}?text=${encodeURIComponent(msg)}`;
+}
+
+function addCustomer(){
+ let nameEl=document.getElementById('name'); let phoneEl=document.getElementById('phone');
+ let amountEl=document.getElementById('amount'); let dueEl=document.getElementById('due'); let noteEl=document.getElementById('note');
+ if(!nameEl.value.trim()){ alert('Customer ka naam to daalo bhai 🙂'); return; }
+ if(!amountEl.value || Number(amountEl.value)<=0){ alert('Valid amount daalo'); return; }
+
+ data.push({
+  id:uid(), name:nameEl.value.trim(), phone:cleanPhone(phoneEl.value), amount:Number(amountEl.value),
+  paid:0, due:dueEl.value, note:noteEl.value.trim(), createdAt:Date.now(), history:[]
+ });
+ save();
+ nameEl.value='';phoneEl.value='';amountEl.value='';dueEl.value='';noteEl.value='';
+ render();
+}
+
+function findIndex(id){ return data.findIndex(c=>c.id===id); }
+function markPaid(id){
+ let i=findIndex(id); if(i<0)return;
+ let c=data[i]; let bal=c.amount-c.paid; if(bal<=0)return;
+ c.paid=c.amount; recovered+=bal;
+ c.history.push({date:Date.now(),amount:bal,type:'full',note:'Full Settlement'});
+ save(); render();
+}
+
+function togglePartial(id){ openPartial.has(id)?openPartial.delete(id):openPartial.add(id); render(); }
+function confirmPartial(id){
+ let i=findIndex(id); if(i<0)return;
+ let input=document.getElementById('partial-amt-'+id); let noteInput=document.getElementById('partial-note-'+id);
+ let amt=Number(input.value); let pNote=noteInput.value.trim() || 'Partial payment';
+ if(!amt || amt<=0){ alert('Sahi amount daalo'); return; }
+ let c=data[i]; let bal=c.amount-c.paid;
+ if(amt>bal) { alert(`Max allowed: ${fmt(bal)}`); return; }
+ c.paid+=amt; recovered+=amt;
+ c.history.push({date:Date.now(),amount:amt,type:'partial',note:pNote});
+ openPartial.delete(id); save(); render();
+}
+
+function toggleEdit(id){ openEdit.has(id)?openEdit.delete(id):openEdit.add(id); render(); }
+function saveEdit(id){
+ let i=findIndex(id); if(i<0)return;
+ let c=data[i];
+ let name=document.getElementById('edit-name-'+id).value.trim(); let phone=document.getElementById('edit-phone-'+id).value;
+ let amount=Number(document.getElementById('edit-amount-'+id).value); let due=document.getElementById('edit-due-'+id).value;
+ let note=document.getElementById('edit-note-'+id).value.trim();
+ if(!name){ alert('Naam khali nahi ho sakta'); return; }
+ if(amount<c.paid){ alert('Amount paid se kam nahi ho sakta'); return; }
+ c.name=name; c.phone=cleanPhone(phone); c.amount=amount; c.due=due; c.note=note;
+ openEdit.delete(id); save(); render();
+}
+
+function toggleHistory(id){ openHistory.has(id)?openHistory.delete(id):openHistory.add(id); render(); }
+function del(id){ if(!confirm('Pakka delete karna hai?')) return; let i=findIndex(id); if(i<0)return; data.splice(i,1); save(); render(); }
+function setFilter(f){ filterMode=f; render(); }
+
+function exportData(){
+ let blob=new Blob([JSON.stringify({data,recovered,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+ let url=URL.createObjectURL(blob); let a=document.createElement('a');
+ a.href=url; a.download='udhar-khata-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ a.click(); URL.revokeObjectURL(url);
+}
+
+function importData(ev){
+ let file=ev.target.files[0]; if(!file)return;
+ let reader=new FileReader();
+ reader.onload=e=>{
+  try{
+   let parsed=JSON.parse(e.target.result); let incoming = parsed.data || parsed || [];
+   if(!Array.isArray(incoming)) throw new Error('bad format');
+   data=incoming.map(c=>({ id:c.id||uid(), name:c.name||'', phone:cleanPhone(c.phone), amount:Number(c.amount||0), paid:Number(c.paid||0), due:c.due||'', note:c.note||'', createdAt:c.createdAt||Date.now(), history:c.history||[] }));
+   recovered=Number(parsed.recovered||0); save(); render(); alert('Import Success! ✅');
+  }catch(err){ alert('File format error'); }
+ };
+ reader.readAsText(file); ev.target.value='';
+}
+
+function clearAll(){ if(!confirm('Sab data delete ho jayega?')) return; data=[]; recovered=0; save(); render(); }
+
+function dueInfo(c,bal){
+ if(bal<=0) return {label:'PAID',cls:'paid',sortDays:Infinity};
+ if(!c.due) return {label:'NO DUE\nDATE',cls:'due',sortDays:99999};
+ let parts = c.due.split('-'); let due = new Date(parts[0], parts[1] - 1, parts[2]);
+ let today = new Date(); today.setHours(0,0,0,0);
+ let diff=Math.round((due-today)/86400000);
+ if(diff<0) return {label:`OVERDUE\n${Math.abs(diff)}D`,cls:'overdue',sortDays:diff};
+ if(diff===0) return {label:'DUE\nTODAY',cls:'overdue',sortDays:0};
+ if(diff<=3) return {label:`DUE IN\n${diff}D`,cls:`dueSoon`,sortDays:diff};
+ return {label:`DUE IN\n${diff}D`,cls:'due',sortDays:diff};
+}
+
+function renderMonthlyAnalysis() {
+  let months = {};
+  data.forEach(c => {
+    let date = new Date(c.createdAt);
+    let monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    if(!months[monthKey]) months[monthKey] = { lent: 0, paid: 0, pending: 0, timestamp: date.getTime() };
+    let bal = c.amount - c.paid;
+    months[monthKey].lent += c.amount; months[monthKey].paid += c.paid; months[monthKey].pending += bal;
+  });
+  let keys = Object.keys(months).sort((a,b) => months[b].timestamp - months[a].timestamp);
+  let gridEl = document.getElementById('month-grid');
+  if(keys.length === 0) { gridEl.innerHTML = `<div style="color:var(--muted); font-size:13px;">No data yet.</div>`; return; }
+  let html = '';
+  keys.forEach(k => {
+    let m = months[k];
+    html += `<div class="month-card"><div class="month-name">📅 ${k}</div><div class="month-row"><span>Total Lent:</span><b>${fmt(m.lent)}</b></div><div class="month-row"><span>Recovered:</span><b style="color:var(--good)">${fmt(m.paid)}</b></div><div class="month-row"><span>Pending:</span><b style="color:var(--accent)">${fmt(m.pending)}</b></div></div>`;
+  });
+  gridEl.innerHTML = html;
+}
+
+function render(){
+ document.getElementById('shopNameDisplay').innerText = shopName;
+ document.getElementById('footerShopName').innerText = shopName;
+ renderMonthlyAnalysis();
+ 
+ let html='';
+ let q=(document.getElementById('search')?.value||'').toLowerCase().trim();
+ let sortMode=document.getElementById('sortMode')?.value||'new';
+ let pendingTotal=0, overdueCount=0, lentTotal=0;
+ 
+ data.forEach(c=>{
+  let bal=c.amount-c.paid; lentTotal+=c.amount; if(bal>0) pendingTotal+=bal;
+  let info=dueInfo(c,bal); if(info.cls==='overdue') overdueCount++;
+ });
+
+ let totalPool = lentTotal + recovered;
+ let progressPercent = totalPool > 0 ? Math.round((recovered / totalPool) * 100) : 0;
+ document.getElementById('progress-percent').innerText = progressPercent + '%';
+ document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+ let visible=data.filter(c=>{
+  if(q && !(c.name.toLowerCase().includes(q) || c.phone.includes(q))) return false;
+  let bal=c.amount-c.paid; let info=dueInfo(c,bal);
+  if(filterMode==='pending' && bal<=0) return false;
+  if(filterMode==='overdue' && info.cls!=='overdue') return false;
+  if(filterMode==='paid' && bal>0) return false;
+  return true;
+ });
+
+ visible.sort((a,b)=>{
+  if(sortMode==='name') return a.name.localeCompare(b.name);
+  if(sortMode==='balance') return (b.amount-b.paid)-(a.amount-a.paid);
+  if(sortMode==='due'){ let ba=a.amount-a.paid, bb=b.amount-b.paid; let da=dueInfo(a,ba).sortDays, db=dueInfo(b,bb).sortDays; return da-db; }
+  return b.createdAt-a.createdAt;
+ });
+
+ if(visible.length===0){
+  html=`<div class="empty"><p>No entries found.</p></div>`;
+ } else {
+  visible.forEach(c=>{
+   let bal=c.amount-c.paid; let info=dueInfo(c,bal);
+   let msg=`Namaste ${c.name}, ${shopName} se aapka baki udhar ${fmt(bal)} hai. Kripya bhugtan karein.`;
+   let stampLabel=info.label.split('\n').map(l=>`<div>${l}</div>`).join('');
+
+   let editingHtml='';
+   if(openEdit.has(c.id)){
+    editingHtml=`<div class="inline-form"><div class="row2"><div><label class="field-label">Customer Name</label><input id="edit-name-${c.id}" value="${escapeAttr(c.name)}"></div><div><label class="field-label">Phone</label><input id="edit-phone-${c.id}" value="${escapeAttr(c.phone)}"></div></div><div class="row2"><div><label class="field-label">Amount</label><input id="edit-amount-${c.id}" type="number" value="${c.amount}"></div><div><label class="field-label">Due Date</label><input id="edit-due-${c.id}" type="date" value="${c.due||''}"></div></div><label class="field-label">Note</label><input id="edit-note-${c.id}" value="${escapeAttr(c.note||'')}"><div class="actions"><button class="btn btn-good" onclick="saveEdit('${c.id}')">Save</button><button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">Cancel</button></div></div>`;
+   }
+
+   let partialHtml='';
+   if(openPartial.has(c.id)){
+    partialHtml=`<div class="inline-form"><div class="row2"><div><label class="field-label">Received Amount</label><input id="partial-amt-${c.id}" type="number"></div><div><label class="field-label">Payment Mode</label><input id="partial-note-${c.id}" placeholder="Cash, UPI etc."></div></div><div class="actions"><button class="btn btn-info" onclick="confirmPartial('${c.id}')">Confirm</button><button class="btn btn-ghost" onclick="togglePartial('${c.id}')">Cancel</button></div></div>`;
+   }
+
+   let historyHtml='';
+   if(openHistory.has(c.id)){
+    let rows=c.history.slice().reverse().map(h=>{
+      let d=new Date(h.date); let dateStr=d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+      return `<div class="history-row"><span>${dateStr} — ${h.type==='full'?'Full':'Partial'}</span><span class="amt">+${fmt(h.amount)}</span>${h.note?`<div class="p-note">📝 ${escapeHtml(h.note)}</div>`:''}</div>`;
+     }).join('');
+     historyHtml=`<div class="history"><h4>Payment History</h4>${rows||'No entries'}</div>`;
+   }
+
+   let cleanDispDate = 'No due date';
+   if(c.due) { let p = c.due.split('-'); cleanDispDate = new Date(p[0], p[1]-1, p[2]).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+
+   html+=`<div class="cust"><div class="stamp ${info.cls}">${stampLabel}</div><div class="top-row"><div><h3>${escapeHtml(c.name)}</h3><p class="phone">${c.phone?'📞 '+c.phone:'No phone'}</p></div></div><div class="ledger"><div class="ledger-row total"><span>Total Udhar</span><b>${fmt(c.amount)}</b></div><div class="ledger-row paidrow"><span>Received Jama</span><b>${fmt(c.paid)}</b></div><div class="ledger-row balrow"><span>Baki Balance</span><b>${fmt(bal)}</b></div></div><div class="due-line">📅 Due: ${cleanDispDate}</div>${c.note?`<div class="note">📦 Items: ${escapeHtml(c.note)}</div>`:''}<div class="actions">${c.phone?`<a target="_blank" href="${waLink(c.phone,msg)}"><button class="btn btn-good">💬 WhatsApp</button></a>`:''}${bal>0?`<button class="btn btn-info" onclick="togglePartial('${c.id}')">Partial Pay</button>`:''}${bal>0?`<button class="btn btn-good" onclick="markPaid('${c.id}')">Mark Full Paid</button>`:''}<button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">✏ Edit</button><button class="btn btn-ghost" onclick="toggleHistory('${c.id}')">📜 History (${c.history.length})</button><button class="btn btn-bad" onclick="del('${c.id}')">🗑 Delete</button></div>${partialHtml}${editingHtml}${historyHtml}</div>`;
+  });
+ }
+
+ document.getElementById('list').innerHTML=html;
+ document.getElementById('pending').innerText=fmt(pendingTotal);
+ document.getElementById('customers').innerText=data.length;
+ document.getElementById('recovered').innerText=fmt(recovered);
+ document.getElementById('overdue').innerText=overdueCount;
+ document.getElementById('lent').innerText=fmt(lentTotal);
+}
+
+function setFilter(f){ filterMode=f; render(); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+// Initial load rendering
+let html=''; FILTERS.forEach(f=>{ html+=`<button class="pill ${filterMode===f.id?'active':''}" onclick="setFilter('${f.id}')">${f.label}</button>`; });
+document.getElementById('pills').innerHTML=html;
+render();
+</script>
+</body>
+</html>
