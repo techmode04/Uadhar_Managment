@@ -213,7 +213,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
   <div class="iconbar">
     <button class="iconbtn" onclick="toggleConfig()">⚙️ Settings & Cloud</button>
     <button class="iconbtn" onclick="exportData()">⬇ Export Backup</button>
-    <label class="iconbtn" style="margin:0">⬆ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    <label class="iconbtn" style="margin:0">⬆ Import Backup File<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
     <button class="iconbtn" onclick="clearAll()">🗑 Reset</button>
   </div>
 </header>
@@ -313,6 +313,15 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 
 <div id="list" class="list"></div>
 
+<div id="backupViewerSection" class="card" style="margin-top:30px; border: 2px dashed var(--info); display:none;">
+  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:15px;">
+    <h3 style="color:var(--info); margin:0;">📋 Imported Backup Data Viewer (Live Cloud Safe Hai)</h3>
+    <button class="btn btn-bad" onclick="closeBackupViewer()" style="padding:4px 10px; font-size:11px;">✕ Hide Section</button>
+  </div>
+  <p style="font-size:13px; color:var(--muted); margin-top:0;">Yeh data aapki backup file se sirf dekhne ke liye load hua hai. Isse aapke live cloud page ya database ko koi nuksan nahi hua hai. 👍</p>
+  <div id="backupList" class="list"></div>
+</div>
+
 <div style="text-align:center; margin-top:35px;">
   <button class="btn btn-info" onclick="openSetupModal()" style="padding:12px 24px; box-shadow: 0 4px 15px rgba(127,176,214,0.2);">☁️ Cloud Setup Kaise Karein? (Get Backup Link)</button>
 </div>
@@ -387,6 +396,7 @@ function doGet(e) {
 
 <script>
 let data = [];
+let backupData = []; // Purely for separate page/viewing
 let recovered = 0;
 let shopName = localStorage.getItem('dhisle_shop_name') || 'Dhisle Hardware & Traders';
 let shopLogo = localStorage.getItem('dhisle_shop_logo') || '';
@@ -418,8 +428,8 @@ function save() {
 
 function openSetupModal() { document.getElementById('setupModal').style.display = 'flex'; }
 function closeSetupModal() { document.getElementById('setupModal').style.display = 'none'; }
-
 function closePrintModal() { document.getElementById('printModalOverlay').style.display = 'none'; }
+function closeBackupViewer() { document.getElementById('backupViewerSection').style.display = 'none'; }
 
 function copyGoogleCode() {
   let codeText = document.getElementById('gsCode').innerText;
@@ -654,18 +664,81 @@ function exportData(){
  a.click(); URL.revokeObjectURL(url);
 }
 
+// ⚠️ FIXED: Ab import karne se live page ya cloud data overwrite nahi hoga, balki alag section me dikhega!
 function importData(ev){
  let file=ev.target.files[0]; if(!file)return;
  let reader=new FileReader();
  reader.onload=e=>{
   try{
-   let parsed=JSON.parse(e.target.result); let incoming = parsed.data || parsed || [];
+   let parsed=JSON.parse(e.target.result); 
+   let incoming = parsed.data || parsed || [];
    if(!Array.isArray(incoming)) throw new Error('bad format');
-   data=incoming.map(c=>({ id:c.id||uid(), name:c.name||'', phone:cleanPhone(c.phone), village:c.village||'', amount:Number(c.amount||0), paid:Number(c.paid||0), due:c.due||'', note:c.note||'', createdAt:c.createdAt||Date.now(), history:c.history||[] }));
-   recovered=Number(parsed.recovered||0); save(); updateVillageDropdown(); render(); alert('Import Success! ✅');
+   
+   // Backup data format standardise karke alag array me save karo
+   backupData = incoming.map(c=>({ 
+     id:c.id||uid(), 
+     name:c.name||'', 
+     phone:cleanPhone(c.phone), 
+     village:c.village||'', 
+     amount:Number(c.amount||0), 
+     paid:Number(c.paid||0), 
+     due:c.due||'', 
+     note:c.note||'', 
+     createdAt:c.createdAt||Date.now(), 
+     history:c.history||[] 
+   }));
+   
+   renderBackupViewer();
+   alert('Backup File alag section me load ho chuki hai! Live cloud safe hai. 👍');
   }catch(err){ alert('File format error'); }
  };
  reader.readAsText(file); ev.target.value='';
+}
+
+// Separate function to render backup data below without affecting live layout
+function renderBackupViewer() {
+  let container = document.getElementById('backupViewerSection');
+  let listEl = document.getElementById('backupList');
+  if(!container || !listEl) return;
+  
+  if(backupData.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'block';
+  let html = '';
+  
+  backupData.forEach(c => {
+    let bal = c.amount - c.paid;
+    let info = dueInfo(c, bal);
+    let stampLabel = info.label.split('\n').map(l=>`<div>${l}</div>`).join('');
+    let cleanDispDate = c.due ? new Date(c.due.split('-')[0], c.due.split('-')[1]-1, c.due.split('-')[2]).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : 'No due date';
+
+    html += `
+      <div class="cust" style="border-color: var(--line);">
+        <div class="stamp ${info.cls}">${stampLabel}</div>
+        <div class="top-row">
+          <div>
+            <h3>${escapeHtml(c.name)} <span style="font-size:12px; color:var(--info); font-weight:normal;">(From Backup File)</span></h3>
+            <p class="phone">${c.phone?'📞 '+c.phone:'No phone'}</p>
+            ${c.village?`<div class="village-tag">📍 ${escapeHtml(c.village)}</div>`:''}
+          </div>
+        </div>
+        <div class="ledger">
+          <div class="ledger-row total"><span>Total Udhar</span><b>${fmt(c.amount)}</b></div>
+          <div class="ledger-row paidrow"><span>Received Jama</span><b>${fmt(c.paid)}</b></div>
+          <div class="ledger-row balrow"><span>Baki Balance</span><b>${fmt(bal)}</b></div>
+        </div>
+        <div class="due-line">📅 Due: ${cleanDispDate}</div>
+        ${c.note?`<div class="note">📦 Items: ${escapeHtml(c.note)}</div>`:''}
+      </div>
+    `;
+  });
+  
+  listEl.innerHTML = html;
+  // Scroll straight to the viewer so user can see it instantly
+  container.scrollIntoView({ behavior: 'smooth' });
 }
 
 function clearAll(){ if(!confirm('Sab data delete ho jayega?')) return; data=[]; recovered=0; save(); updateVillageDropdown(); render(); }
@@ -715,7 +788,7 @@ function generateInvoice(id) {
     try {
       let p = c.due.split('-');
       if (p.length === 3) {
-        dueStr = new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+        dueStr = new Date(p[0], p[1] - 1, p[2]).toLocaleString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
       }
     } catch(e) { dueStr = 'No Due Date'; }
   }
