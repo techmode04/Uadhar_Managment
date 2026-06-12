@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Digital Udhar Khata — Auto Sync V9</title>
+<title>Digital Udhar Khata — Auto Sync V10</title>
 <style>
 :root{
   --bg:#0E1A17;
@@ -172,7 +172,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 </header>
 
 <div class="config-box" id="configBox" style="display:none;">
-  <h4 style="margin:0 0 12px; color:var(--accent)">⚙️ Software Settings & Auto Cloud Sync</h4>
+  <h4 style="margin:0 0 12px; color:var(--accent)">⚙️ Software Settings & Full Auto Sync</h4>
   
   <div style="margin-bottom: 12px;">
     <label class="field-label" style="margin-top:0;">Dukaan / Business Ka Naam</label>
@@ -183,7 +183,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
   </div>
 
   <div style="border-top: 1px dashed var(--line); margin-top:12px; padding-top:12px;">
-    <label class="field-label">Google Script Backup URL (Isi se auto-save hoga)</label>
+    <label class="field-label">Google Script Backup URL (Isi se auto-save aur auto-load hoga)</label>
     <div style="display:flex; gap:8px;">
       <input id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px; padding:8px;">
       <button class="btn btn-good" onclick="saveScriptUrl()" style="padding:4px 12px;">Save URL</button>
@@ -259,6 +259,7 @@ const FILTERS=[{id:'all',label:'All Accounts'},{id:'pending',label:'Pending'},{i
 let filterMode='all';
 let openPartial=new Set(); let openEdit=new Set(); let openHistory=new Set();
 
+// 1. Pehle local data load karo taaki screen blank na dikhe
 loadLocalData();
 
 function loadLocalData(){
@@ -301,28 +302,49 @@ function saveScriptUrl() {
   let url = document.getElementById('scriptUrlInput').value.trim();
   localStorage.setItem('dhisle_cloud_url', url);
   cloudScriptUrl = url;
-  updateSyncIndicator();
-  alert("Cloud URL Settings saved! Ab data automatic background me save hoga.");
-  render();
+  updateSyncIndicator('🟢 Cloud Auto-Sync Active', 'var(--good)');
+  alert("Cloud URL Settings saved! Ab data automatic sync hoga.");
+  autoPullOnStartup(); // Immediately sync
 }
 
-function updateSyncIndicator() {
+function updateSyncIndicator(text, color) {
   let ind = document.getElementById('sync-indicator');
-  if (cloudScriptUrl) {
-    ind.innerText = '🟢 Cloud Auto-Sync Active';
-    ind.style.color = 'var(--good)';
-  } else {
-    ind.innerText = '🟢 Local Storage Active (Offline)';
-    ind.style.color = 'var(--accent)';
+  if(ind) {
+    ind.innerText = text;
+    ind.style.color = color;
   }
 }
 
-// --- CLOUD SYNC ENGINE (AUTO RUNS ON SAVE) ---
+// --- AUTOMATIC CLOUD ENGINE ---
+
+// 🚀 PAGE OPEN HOTI HI APNE AAP CHALEGA (AUTO-PULL)
+async function autoPullOnStartup() {
+  if(!cloudScriptUrl) {
+    updateSyncIndicator('🟢 Local Storage Active (Offline)', 'var(--accent)');
+    return;
+  }
+  updateSyncIndicator('⏳ Syncing cloud data on startup...', 'var(--info)');
+  try {
+    let response = await fetch(cloudScriptUrl + '?action=get');
+    let resData = await response.json();
+    if(resData && resData.data) {
+      data = resData.data; 
+      recovered = resData.recovered || 0;
+      localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
+      updateSyncIndicator('🟢 Cloud Synced', 'var(--good)');
+      render();
+    } else {
+      updateSyncIndicator('🟢 Cloud Active (No cloud data found)', 'var(--good)');
+    }
+  } catch(e) { 
+    updateSyncIndicator('❌ Startup Sync Failed (Using Local Data)', 'var(--bad)');
+  }
+}
+
+// 📤 DATA SAVE HOTI HI APNE AAP BACKGROUND ME UPDATE KAREGA (AUTO-PUSH)
 async function autoPushToCloud() {
   if(!cloudScriptUrl) return;
-  let ind = document.getElementById('sync-indicator');
-  ind.innerText = '⏳ Saving to Cloud...';
-  ind.style.color = 'var(--info)';
+  updateSyncIndicator('⏳ Saving to Cloud...', 'var(--info)');
   try {
     await fetch(cloudScriptUrl, { 
       method: 'POST', 
@@ -330,11 +352,9 @@ async function autoPushToCloud() {
       headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify({ action: 'save', data: data, recovered: recovered }) 
     });
-    ind.innerText = '🟢 Cloud Synced';
-    ind.style.color = 'var(--good)';
+    updateSyncIndicator('🟢 Cloud Synced', 'var(--good)');
   } catch(e) {
-    ind.innerText = '❌ Auto-Save Failed';
-    ind.style.color = 'var(--bad)';
+    updateSyncIndicator('❌ Auto-Save Failed', 'var(--bad)');
   }
 }
 
@@ -346,23 +366,8 @@ async function pushToCloud() {
 
 async function syncWithCloud() {
   if(!cloudScriptUrl) { alert("Pehle URL daalo bhai."); return; }
-  let ind = document.getElementById('sync-indicator');
-  ind.innerText = '⏳ Loading from Cloud...';
-  try {
-    let response = await fetch(cloudScriptUrl + '?action=get');
-    let resData = await response.json();
-    if(resData && resData.data) {
-      if(confirm("Cloud data load karein? Local screen ka data overwrite ho jayega.")) {
-        data = resData.data; recovered = resData.recovered || 0;
-        localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
-        updateSyncIndicator();
-        render();
-        alert("Cloud data successfully khinch liya gya! 🎉");
-      }
-    } else { alert("Cloud par koi data nahi mila."); updateSyncIndicator(); }
-  } catch(e) { 
-    alert("Error pulling data! Re-check URL."); 
-    updateSyncIndicator();
+  if(confirm("Cloud data force load karein? Local screen overwrite ho jayega.")) {
+    await autoPullOnStartup();
   }
 }
 
@@ -487,7 +492,6 @@ function renderMonthlyAnalysis() {
 function render(){
  document.getElementById('shopNameDisplay').innerText = shopName;
  document.getElementById('footerShopName').innerText = shopName;
- updateSyncIndicator();
  renderMonthlyAnalysis();
  
  let html='';
@@ -567,10 +571,14 @@ function setFilter(f){ filterMode=f; render(); }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function escapeAttr(s){ return escapeHtml(s); }
 
-// Initial load rendering
+// Initial configuration
 let html=''; FILTERS.forEach(f=>{ html+=`<button class="pill ${filterMode===f.id?'active':''}" onclick="setFilter('${f.id}')">${f.label}</button>`; });
 document.getElementById('pills').innerHTML=html;
+
 render();
+
+// 🚀 Start Auto Sync Right Away on Page Load
+autoPullOnStartup();
 </script>
 </body>
 </html>
