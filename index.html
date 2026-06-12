@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Digital Udhar Khata — Rural Super Edition V13</title>
+<title>Digital Udhar Khata — Auto Sync V11</title>
 <style>
 :root{
   --bg:#0E1A17;
@@ -97,11 +97,9 @@ input::placeholder,textarea::placeholder{color:#6e8079}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-@media(max-width:600px){
-  .row2, .row3{grid-template-columns:1fr}
-}
+@media(max-width:480px){.row2, .row3{grid-template-columns:1fr}}
 
-.btn{ padding:10px 14px; border-radius:10px; border:1px solid transparent; font-size:13px; cursor:pointer; font-weight:600; transition:.15s; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:4px;}
+.btn{ padding:10px 14px; border-radius:10px; border:1px solid transparent; font-size:13px; cursor:pointer; font-weight:600; transition:.15s; white-space:nowrap; }
 .btn:active{transform:scale(.97)}
 .btn-accent{background:var(--accent);color:var(--accent-ink)}
 .btn-good{background:var(--good);color:var(--good-ink)}
@@ -111,23 +109,22 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-c
 .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 .btn-block{width:100%;margin-top:10px;padding:12px}
 
-.controls{display:flex;gap:10px;flex-direction:column;margin:18px 0}
-.search-row{display:flex;gap:10px;width:100%;flex-wrap:wrap;}
-.search-row input{flex:2;min-width:200px}
-.search-row select{flex:1;min-width:150px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}
+.controls input{flex:1;min-width:180px}
 .pills{display:flex;gap:6px;flex-wrap:wrap}
 .pill{ padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--muted); font-size:12px; cursor:pointer; text-transform:uppercase; letter-spacing:.5px; }
 .pill.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.controls select{width:auto;min-width:140px}
 
 .config-box { background: var(--card2); border: 1px dashed var(--line); padding: 15px; border-radius: 10px; margin-bottom: 15px; }
 .list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
 .cust{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; position:relative; overflow:hidden; }
-.cust .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-right:90px}
+.cust .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding-right:80px}
 .cust h3{margin:0;font-family:Georgia,serif;font-size:19px}
 .cust .phone{margin:3px 0 0;color:var(--muted);font-size:13px}
-.cust .v-badge{background:var(--card2); border:1px solid var(--line); padding:3px 10px; border-radius:6px; font-size:11px; color:var(--accent); display:inline-block; margin-top:5px; font-weight:600;}
+.cust .village-tag{display:inline-block;background:var(--bg2);border:1px solid var(--line);color:var(--accent);font-size:11px;padding:2px 8px;border-radius:6px;margin-top:4px;font-weight:500;}
 
-.stamp{ position:absolute; top:14px; right:14px; border:2px dashed currentColor; border-radius:50%; width:78px; height:78px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px; font-weight:bold; letter-spacing:.5px; transform:rotate(-10deg); line-height:1.2; padding:4px; z-index:5; }
+.stamp{ position:absolute; top:14px; right:14px; border:2px dashed currentColor; border-radius:50%; width:78px; height:78px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:10px; font-weight:bold; letter-spacing:.5px; transform:rotate(-10deg); line-height:1.2; padding:4px; }
 .stamp.paid{color:var(--good)}
 .stamp.overdue{color:var(--bad)}
 .stamp.dueSoon{color:var(--accent)}
@@ -142,8 +139,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-c
 .due-line{margin-top:8px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .note{margin-top:8px;font-size:13px;color:var(--muted);font-style:italic;background:var(--bg2);padding:8px 10px;border-radius:8px}
 
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
-.actions a{text-decoration:none; display:inline-flex;}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.actions a{text-decoration:none}
 .inline-form{margin-top:12px;background:var(--bg2);border-radius:10px;padding:12px;border:1px solid var(--line)}
 .inline-form .row2{margin-bottom:0}
 .inline-form .actions{margin-top:10px}
@@ -158,6 +155,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-c
 .empty{text-align:center;padding:50px 20px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--radius);margin-top:14px;}
 footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 
+/* --- POPUP MODAL STYLES --- */
 .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:flex; align-items:center; justify-content:center; padding:15px; }
 .modal-box { background:var(--card); border:2px solid var(--line); border-radius:var(--radius); max-width:650px; width:100%; max-height:85vh; overflow-y:auto; padding:22px; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 .close-modal { position:absolute; top:12px; right:16px; background:transparent; border:none; color:var(--muted); font-size:24px; cursor:pointer; }
@@ -196,7 +194,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
   </div>
 
   <div style="border-top: 1px dashed var(--line); margin-top:12px; padding-top:12px;">
-    <label class="field-label">Google Script Backup URL</label>
+    <label class="field-label">Google Script Backup URL (Isi se auto-save aur auto-load hoga)</label>
     <div style="display:flex; gap:8px;">
       <input id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px; padding:8px;">
       <button class="btn btn-good" onclick="saveScriptUrl()" style="padding:4px 12px;">Save URL</button>
@@ -236,11 +234,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
   <div class="row3">
     <div><label class="field-label">Customer Name</label><input id="name" placeholder="Ramesh Bhai, Sonu Painter etc."></div>
     <div><label class="field-label">Phone Number</label><input id="phone" placeholder="10-digit mobile number"></div>
-    <div>
-      <label class="field-label">Gaon / Area (Village)</label>
-      <input id="village" placeholder="e.g. Karanji, Pimpalgaon" list="villageList">
-      <datalist id="villageList"></datalist>
-    </div>
+    <div><label class="field-label">Gaon / Village</label><input id="village" placeholder="e.g., Rampur, Chandanpur"></div>
   </div>
   <div class="row2">
     <div><label class="field-label">Amount (₹)</label><input id="amount" type="number" placeholder="0"></div>
@@ -252,19 +246,17 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 </div>
 
 <div class="controls">
-  <div class="search-row">
-    <input id="search" placeholder="🔍 Search by Name, Phone, or Village..." oninput="render()">
-    <select id="villageFilter" onchange="render()">
-      <option value="all">🌍 Sabhi Gaon (All Villages)</option>
-    </select>
-    <select id="sortMode" onchange="render()">
-      <option value="new">Newest Entries</option>
-      <option value="name">Name (A-Z)</option>
-      <option value="balance">Highest Balance Due</option>
-      <option value="due">Due Date (Soonest)</option>
-    </select>
-  </div>
+  <input id="search" placeholder="🔍 Search customer by name or phone..." oninput="render()">
+  <select id="villageFilter" onchange="render()">
+    <option value="all">Sabhi Gaon (All Villages)</option>
+  </select>
   <div class="pills" id="pills"></div>
+  <select id="sortMode" onchange="render()">
+    <option value="new">Newest Entries</option>
+    <option value="name">Name (A-Z)</option>
+    <option value="balance">Highest Balance Due</option>
+    <option value="due">Due Date (Soonest)</option>
+  </select>
 </div>
 
 <div id="list" class="list"></div>
@@ -276,11 +268,11 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 <footer class="foot"><span id="footerShopName">Apni Dukaan</span> © 2026 — Secure Offline First Ledger</footer>
 </div>
 
-<div class="modal-overlay" id="setupModal" style="none" style="display:none;">
+<div class="modal-overlay" id="setupModal" style="display:none;">
   <div class="modal-box">
     <button class="close-modal" onclick="closeSetupModal()">×</button>
     <h3 style="margin-top:0; font-family:Georgia,serif; color:var(--accent); font-size:22px; border-bottom:1px dashed var(--line); padding-bottom:10px;">☁️ Personal Cloud Backup Setup Guide</h3>
-    <p style="font-size:14px; color:var(--muted); line-height:1.5;">Is software ka data 100% private rakhne ke liye aapko apne personal Google Drive ka ek link jodna hoga. Bas 3 chhote steps pure karein:</p>
+    <p style="font-size:14px; color:var(--muted); line-height:1.5;">Is software ka data 100% private rakhne ke liye aapko apne personal Google Drive ka ek link jodna hoga. Bas niche diye gaye 3 chhote steps pure karein:</p>
     
     <div style="margin-top:18px;">
       <p style="font-size:14px; font-weight:bold;"><span class="step-number">1</span> Niche diye gaye Lock-Code ko Copy karein:</p>
@@ -308,6 +300,7 @@ function doGet(e) {
 
     <div style="margin-top:20px;">
       <p style="font-size:14px; font-weight:bold;"><span class="step-number">2</span> Google Script par jakar ise paste karein:</p>
+      <p style="font-size:13px; color:var(--muted); margin:4px 0 10px 32px;">Niche diye gaye button ko daba kar website kholein, wahan <b>"New Project"</b> banakar saara purana code mitayein aur upar se copy kiya hua code paste kar dein.</p>
       <div style="margin-left:32px;">
         <a href="https://script.google.com/" target="_blank"><button class="btn btn-good">🌐 Open script.google.com Website</button></a>
       </div>
@@ -316,10 +309,10 @@ function doGet(e) {
     <div style="margin-top:20px; border-bottom:1px dashed var(--line); padding-bottom:15px;">
       <p style="font-size:14px; font-weight:bold;"><span class="step-number">3</span> Deploy karke Link yahan daalein:</p>
       <ul style="font-size:13px; color:var(--muted); margin:5px 0 5px 32px; padding-left:15px; line-height:1.6;">
-        <li><b>Deploy -> New Deployment</b> par click karein.</li>
+        <li>Top Right me <b>Deploy -> New Deployment</b> par click karein.</li>
         <li>Gear icon (⚙️) par jakar <b>Web App</b> select karein.</li>
-        <li><b>Who has access</b> ko badal kar <b>"Anyone"</b> karein aur Deploy daba edin.</li>
-        <li>Milne wale URL link ko copy karke App ke upar <b>⚙️ Settings & Cloud</b> me dakar save kar dein!</li>
+        <li><b>Who has access</b> ko badal kar <b>"Anyone"</b> karein aur Deploy daba dein.</li>
+        <li>Wahan se milne wale lambe se Web App URL link ko copy karke is App ke upar <b>⚙️ Settings & Cloud</b> me dakar save kar dein!</li>
       </ul>
     </div>
     
@@ -359,6 +352,7 @@ function save() {
  }
 }
 
+// Modal Toggle Logic
 function openSetupModal() { document.getElementById('setupModal').style.display = 'flex'; }
 function closeSetupModal() { document.getElementById('setupModal').style.display = 'none'; }
 
@@ -426,6 +420,7 @@ async function autoPullOnStartup() {
       recovered = resData.recovered || 0;
       localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
       updateSyncIndicator('🟢 Cloud Synced', 'var(--good)');
+      updateVillageDropdown();
       render();
     } else {
       updateSyncIndicator('🟢 Cloud Active (No cloud data found)', 'var(--good)');
@@ -464,6 +459,7 @@ async function syncWithCloud() {
   }
 }
 
+// --- STANDARD APP LOGIC ---
 function uid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function fmt(n){ return '₹'+Math.round(Number(n||0)).toLocaleString('en-IN'); }
 function cleanPhone(p){ return (p||'').replace(/\D/g,''); }
@@ -474,19 +470,18 @@ function waLink(phone,msg){
 
 function addCustomer(){
  let nameEl=document.getElementById('name'); let phoneEl=document.getElementById('phone');
- let amountEl=document.getElementById('amount'); let dueEl=document.getElementById('due'); 
- let noteEl=document.getElementById('note'); let villageEl=document.getElementById('village');
- 
+ let amountEl=document.getElementById('amount'); let dueEl=document.getElementById('due'); let noteEl=document.getElementById('note');
+ let villageEl=document.getElementById('village');
  if(!nameEl.value.trim()){ alert('Customer ka naam to daalo bhai 🙂'); return; }
  if(!amountEl.value || Number(amountEl.value)<=0){ alert('Valid amount daalo'); return; }
 
  data.push({
-  id:uid(), name:nameEl.value.trim(), phone:cleanPhone(phoneEl.value), 
-  village: villageEl.value.trim() || 'Other', amount:Number(amountEl.value),
+  id:uid(), name:nameEl.value.trim(), phone:cleanPhone(phoneEl.value), village:villageEl.value.trim(), amount:Number(amountEl.value),
   paid:0, due:dueEl.value, note:noteEl.value.trim(), createdAt:Date.now(), history:[]
  });
  save();
- nameEl.value='';phoneEl.value='';amountEl.value='';dueEl.value='';noteEl.value='';villageEl.value='';
+ nameEl.value='';phoneEl.value='';villageEl.value='';amountEl.value='';dueEl.value='';noteEl.value='';
+ updateVillageDropdown();
  render();
 }
 
@@ -516,21 +511,57 @@ function toggleEdit(id){ openEdit.has(id)?openEdit.delete(id):openEdit.add(id); 
 function saveEdit(id){
  let i=findIndex(id); if(i<0)return;
  let c=data[i];
- let name=document.getElementById('edit-name-'+id).value.trim(); 
- let phone=document.getElementById('edit-phone-'+id).value;
+ let name=document.getElementById('edit-name-'+id).value.trim(); let phone=document.getElementById('edit-phone-'+id).value;
  let village=document.getElementById('edit-village-'+id).value.trim();
- let amount=Number(document.getElementById('edit-amount-'+id).value); 
- let due=document.getElementById('edit-due-'+id).value;
+ let amount=Number(document.getElementById('edit-amount-'+id).value); let due=document.getElementById('edit-due-'+id).value;
  let note=document.getElementById('edit-note-'+id).value.trim();
- 
  if(!name){ alert('Naam khali nahi ho sakta'); return; }
  if(amount<c.paid){ alert('Amount paid se kam nahi ho sakta'); return; }
- c.name=name; c.phone=cleanPhone(phone); c.village=village || 'Other'; c.amount=amount; c.due=due; c.note=note;
- openEdit.delete(id); save(); render();
+ c.name=name; c.phone=cleanPhone(phone); c.village=village; c.amount=amount; c.due=due; c.note=note;
+ openEdit.delete(id); save(); updateVillageDropdown(); render();
 }
 
 function toggleHistory(id){ openHistory.has(id)?openHistory.delete(id):openHistory.add(id); render(); }
-function del(id){ if(!confirm('Pakka delete karna hai?')) return; let i=findIndex(id); if(i<0)return; data.splice(i,1); save(); render(); }
+function del(id){ if(!confirm('Pakka delete karna hai?')) return; let i=findIndex(id); if(i<0)return; data.splice(i,1); save(); updateVillageDropdown(); render(); }
+function setFilter(f){ filterMode=f; render(); }
+
+function updateVillageDropdown() {
+  let dropdown = document.getElementById('villageFilter');
+  if(!dropdown) return;
+  let selectedVal = dropdown.value;
+  let villages = new Set();
+  data.forEach(c => { if(c.village && c.village.trim() !== '') villages.add(c.village.trim()); });
+  
+  let html = '<option value="all">Sabhi Gaon (All Villages)</option>';
+  Array.from(villages).sort().forEach(v => {
+    html += `<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`;
+  });
+  dropdown.innerHTML = html;
+  if(villages.has(selectedVal)) dropdown.value = selectedVal;
+}
+
+function exportData(){
+ let blob=new Blob([JSON.stringify({data,recovered,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+ let url=URL.createObjectURL(blob); let a=document.createElement('a');
+ a.href=url; a.download='udhar-khata-backup-'+new Date().toISOString().slice(0,10)+'.json';
+ a.click(); URL.revokeObjectURL(url);
+}
+
+function importData(ev){
+ let file=ev.target.files[0]; if(!file)return;
+ let reader=new FileReader();
+ reader.onload=e=>{
+  try{
+   let parsed=JSON.parse(e.target.result); let incoming = parsed.data || parsed || [];
+   if(!Array.isArray(incoming)) throw new Error('bad format');
+   data=incoming.map(c=>({ id:c.id||uid(), name:c.name||'', phone:cleanPhone(c.phone), village:c.village||'', amount:Number(c.amount||0), paid:Number(c.paid||0), due:c.due||'', note:c.note||'', createdAt:c.createdAt||Date.now(), history:c.history||[] }));
+   recovered=Number(parsed.recovered||0); save(); updateVillageDropdown(); render(); alert('Import Success! ✅');
+  }catch(err){ alert('File format error'); }
+ };
+ reader.readAsText(file); ev.target.value='';
+}
+
+function clearAll(){ if(!confirm('Sab data delete ho jayega?')) return; data=[]; recovered=0; save(); updateVillageDropdown(); render(); }
 
 function dueInfo(c,bal){
  if(bal<=0) return {label:'PAID',cls:'paid',sortDays:Infinity};
@@ -542,27 +573,6 @@ function dueInfo(c,bal){
  if(diff===0) return {label:'DUE\nTODAY',cls:'overdue',sortDays:0};
  if(diff<=3) return {label:`DUE IN\n${diff}D`,cls:`dueSoon`,sortDays:diff};
  return {label:`DUE IN\n${diff}D`,cls:'due',sortDays:diff};
-}
-
-function updateVillageLists() {
-  let villages = new Set();
-  data.forEach(c => { if(c.village) villages.add(c.village); });
-  
-  let dl = document.getElementById('villageList');
-  if(dl) {
-    dl.innerHTML = Array.from(villages).map(v => `<option value="${escapeAttr(v)}">`).join('');
-  }
-  
-  let vf = document.getElementById('villageFilter');
-  if(vf) {
-    let currentSel = vf.value;
-    let html = `<option value="all">🌍 Sabhi Gaon (All Villages)</option>`;
-    Array.from(villages).sort().forEach(v => {
-      html += `<option value="${escapeAttr(v)}">🏡 ${escapeHtml(v)}</option>`;
-    });
-    vf.innerHTML = html;
-    vf.value = currentSel;
-  }
 }
 
 function renderMonthlyAnalysis() {
@@ -589,11 +599,10 @@ function render(){
  document.getElementById('shopNameDisplay').innerText = shopName;
  document.getElementById('footerShopName').innerText = shopName;
  renderMonthlyAnalysis();
- updateVillageLists();
  
  let html='';
  let q=(document.getElementById('search')?.value||'').toLowerCase().trim();
- let selectedVillage = document.getElementById('villageFilter')?.value || 'all';
+ let selectedVillage=document.getElementById('villageFilter')?.value||'all';
  let sortMode=document.getElementById('sortMode')?.value||'new';
  let pendingTotal=0, overdueCount=0, lentTotal=0;
  
@@ -608,14 +617,8 @@ function render(){
  document.getElementById('progress-bar').style.width = progressPercent + '%';
 
  let visible=data.filter(c=>{
-  let vName = c.village || 'Other';
-  if(selectedVillage !== 'all' && vName !== selectedVillage) return false;
-  
-  if(q) {
-    let combinedStr = (c.name + " " + vName + " " + (c.phone||"")).toLowerCase();
-    if(!combinedStr.includes(q)) return false;
-  }
-  
+  if(q && !(c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q)))) return false;
+  if(selectedVillage !== 'all' && (!c.village || c.village.trim() !== selectedVillage)) return false;
   let bal=c.amount-c.paid; let info=dueInfo(c,bal);
   if(filterMode==='pending' && bal<=0) return false;
   if(filterMode==='overdue' && info.cls!=='overdue') return false;
@@ -635,13 +638,12 @@ function render(){
  } else {
   visible.forEach(c=>{
    let bal=c.amount-c.paid; let info=dueInfo(c,bal);
-   let currentVillage = c.village || 'Other';
    let msg=`Namaste ${c.name}, ${shopName} se aapka baki udhar ${fmt(bal)} hai. Kripya bhugtan karein.`;
    let stampLabel=info.label.split('\n').map(l=>`<div>${l}</div>`).join('');
 
    let editingHtml='';
    if(openEdit.has(c.id)){
-    editingHtml=`<div class="inline-form"><div class="row3"><div><label class="field-label">Customer Name</label><input id="edit-name-${c.id}" value="${escapeAttr(c.name)}"></div><div><label class="field-label">Phone</label><input id="edit-phone-${c.id}" value="${escapeAttr(c.phone)}"></div><div><label class="field-label">Gaon / Area</label><input id="edit-village-${c.id}" value="${escapeAttr(currentVillage)}"></div></div><div class="row2"><div><label class="field-label">Amount</label><input id="edit-amount-${c.id}" type="number" value="${c.amount}"></div><div><label class="field-label">Due Date</label><input id="edit-due-${c.id}" type="date" value="${c.due||''}"></div></div><label class="field-label">Note</label><input id="edit-note-${c.id}" value="${escapeAttr(c.note||'')}"><div class="actions"><button class="btn btn-good" onclick="saveEdit('${c.id}')">Save</button><button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">Cancel</button></div></div>`;
+    editingHtml=`<div class="inline-form"><div class="row2"><div><label class="field-label">Customer Name</label><input id="edit-name-${c.id}" value="${escapeAttr(c.name)}"></div><div><label class="field-label">Phone</label><input id="edit-phone-${c.id}" value="${escapeAttr(c.phone||'')}"></div></div><div class="row2"><div><label class="field-label">Gaon / Village</label><input id="edit-village-${c.id}" value="${escapeAttr(c.village||'')}"></div><div><label class="field-label">Amount</label><input id="edit-amount-${c.id}" type="number" value="${c.amount}"></div></div><div class="row2"><div><label class="field-label">Due Date</label><input id="edit-due-${c.id}" type="date" value="${c.due||''}"></div></div><label class="field-label">Note</label><input id="edit-note-${c.id}" value="${escapeAttr(c.note||'')}"><div class="actions"><button class="btn btn-good" onclick="saveEdit('${c.id}')">Save</button><button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">Cancel</button></div></div>`;
    }
 
    let partialHtml='';
@@ -661,13 +663,7 @@ function render(){
    let cleanDispDate = 'No due date';
    if(c.due) { let p = c.due.split('-'); cleanDispDate = new Date(p[0], p[1]-1, p[2]).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
 
-   // 👇 HERE IS THE FIXED WHATSAPP LINK & BUTTON LOGIC
-   let waButtonHtml = '';
-   if(c.phone && c.phone.trim().length >= 10) {
-      waButtonHtml = `<a target="_blank" href="${waLink(c.phone, msg)}"><button class="btn btn-good">💬 WhatsApp</button></a>`;
-   }
-
-   html+=`<div class="cust"><div class="stamp ${info.cls}">${stampLabel}</div><div class="top-row"><div><h3>${escapeHtml(c.name)}</h3><p class="phone">${c.phone?'📞 '+c.phone:'No phone'}</p><div class="v-badge">🏡 ${escapeHtml(currentVillage)}</div></div></div><div class="ledger"><div class="ledger-row total"><span>Total Udhar</span><b>${fmt(c.amount)}</b></div><div class="ledger-row paidrow"><span>Received Jama</span><b>${fmt(c.paid)}</b></div><div class="ledger-row balrow"><span>Baki Balance</span><b>${fmt(bal)}</b></div></div><div class="due-line">📅 Due: ${cleanDispDate}</div>${c.note?`<div class="note">📦 Items: ${escapeHtml(c.note)}</div>`:''}<div class="actions">${waButtonHtml}${bal>0?`<button class="btn btn-info" onclick="togglePartial('${c.id}')">Partial Pay</button>`:''}${bal>0?`<button class="btn btn-good" onclick="markPaid('${c.id}')">Mark Full Paid</button>`:''}<button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">✏ Edit</button><button class="btn btn-ghost" onclick="toggleHistory('${c.id}')">📜 History (${c.history.length})</button><button class="btn btn-bad" onclick="del('${c.id}')">🗑 Delete</button></div>${partialHtml}${editingHtml}${historyHtml}</div>`;
+   html+=`<div class="cust"><div class="stamp ${info.cls}">${stampLabel}</div><div class="top-row"><div><h3>${escapeHtml(c.name)}</h3><p class="phone">${c.phone?'📞 '+c.phone:'No phone'}</p>${c.village?`<div class="village-tag">📍 ${escapeHtml(c.village)}</div>`:''}</div></div><div class="ledger"><div class="ledger-row total"><span>Total Udhar</span><b>${fmt(c.amount)}</b></div><div class="ledger-row paidrow"><span>Received Jama</span><b>${fmt(c.paid)}</b></div><div class="ledger-row balrow"><span>Baki Balance</span><b>${fmt(bal)}</b></div></div><div class="due-line">📅 Due: ${cleanDispDate}</div>${c.note?`<div class="note">📦 Items: ${escapeHtml(c.note)}</div>`:''}<div class="actions">${c.phone?`<a target="_blank" href="${waLink(c.phone,msg)}"><button class="btn btn-good">💬 WhatsApp</button></a>`:''}${bal>0?`<button class="btn btn-info" onclick="togglePartial('${c.id}')">Partial Pay</button>`:''}${bal>0?`<button class="btn btn-good" onclick="markPaid('${c.id}')">Mark Full Paid</button>`:''}<button class="btn btn-ghost" onclick="toggleEdit('${c.id}')">✏ Edit</button><button class="btn btn-ghost" onclick="toggleHistory('${c.id}')">📜 History (${c.history.length})</button><button class="btn btn-bad" onclick="del('${c.id}')">🗑 Delete</button></div>${partialHtml}${editingHtml}${historyHtml}</div>`;
   });
  }
 
@@ -683,9 +679,11 @@ function setFilter(f){ filterMode=f; render(); }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function escapeAttr(s){ return escapeHtml(s); }
 
-let filterHtml=''; FILTERS.forEach(f=>{ filterHtml+=`<button class="pill ${filterMode===f.id?'active':''}" onclick="setFilter('${f.id}')">${f.label}</button>`; });
-document.getElementById('pills').innerHTML=filterHtml;
+// Initial configuration
+let html=''; FILTERS.forEach(f=>{ html+=`<button class="pill ${filterMode===f.id?'active':''}" onclick="setFilter('${f.id}')">${f.label}</button>`; });
+document.getElementById('pills').innerHTML=html;
 
+updateVillageDropdown();
 render();
 autoPullOnStartup();
 </script>
