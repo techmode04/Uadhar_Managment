@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Digital Udhar Khata — Universal V8</title>
+<title>Digital Udhar Khata — Auto Sync V9</title>
 <style>
 :root{
   --bg:#0E1A17;
@@ -164,7 +164,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
     <div id="sync-indicator" class="drive-status" style="color:var(--accent)">🟢 Local Storage Active (Offline)</div>
   </div>
   <div class="iconbar">
-    <button class="iconbtn" onclick="toggleConfig()">⚙️ Setup & Settings</button>
+    <button class="iconbtn" onclick="toggleConfig()">⚙️ Settings & Cloud</button>
     <button class="iconbtn" onclick="exportData()">⬇ Export Backup</button>
     <label class="iconbtn" style="margin:0">⬆ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
     <button class="iconbtn" onclick="clearAll()">🗑 Reset</button>
@@ -172,7 +172,7 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 </header>
 
 <div class="config-box" id="configBox" style="display:none;">
-  <h4 style="margin:0 0 12px; color:var(--accent)">⚙️ Software Settings & Cloud Setup</h4>
+  <h4 style="margin:0 0 12px; color:var(--accent)">⚙️ Software Settings & Auto Cloud Sync</h4>
   
   <div style="margin-bottom: 12px;">
     <label class="field-label" style="margin-top:0;">Dukaan / Business Ka Naam</label>
@@ -183,14 +183,14 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
   </div>
 
   <div style="border-top: 1px dashed var(--line); margin-top:12px; padding-top:12px;">
-    <label class="field-label">Google Script Backup URL (Optional)</label>
+    <label class="field-label">Google Script Backup URL (Isi se auto-save hoga)</label>
     <div style="display:flex; gap:8px;">
       <input id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px; padding:8px;">
       <button class="btn btn-good" onclick="saveScriptUrl()" style="padding:4px 12px;">Save URL</button>
     </div>
     <div style="margin-top:8px; display:flex; gap:8px;">
-      <button class="btn btn-info" onclick="syncWithCloud()" style="font-size:11px; padding:4px 10px;">🔄 Pull From Cloud</button>
-      <button class="btn btn-ghost" onclick="pushToCloud()" style="font-size:11px; padding:4px 10px;">📤 Push To Cloud</button>
+      <button class="btn btn-info" onclick="syncWithCloud()" style="font-size:11px; padding:4px 10px;">🔄 Force Pull From Cloud</button>
+      <button class="btn btn-ghost" onclick="pushToCloud()" style="font-size:11px; padding:4px 10px;">📤 Force Push To Cloud</button>
     </div>
   </div>
 </div>
@@ -274,7 +274,9 @@ function loadLocalData(){
 
 function save() {
  localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
- if (cloudScriptUrl) { autoPushToCloud(); }
+ if (cloudScriptUrl) { 
+   autoPushToCloud(); 
+ }
 }
 
 function toggleConfig() {
@@ -299,44 +301,69 @@ function saveScriptUrl() {
   let url = document.getElementById('scriptUrlInput').value.trim();
   localStorage.setItem('dhisle_cloud_url', url);
   cloudScriptUrl = url;
+  updateSyncIndicator();
+  alert("Cloud URL Settings saved! Ab data automatic background me save hoga.");
   render();
-  alert("Cloud URL Settings saved!");
 }
 
-// --- CLOUD SYNC ENGINE ---
-async function pushToCloud() {
-  if(!cloudScriptUrl) { alert("Pehle Google Script URL daalo bhai."); return; }
-  document.getElementById('sync-indicator').innerText = '📤 Pushing to Cloud...';
-  try {
-    await fetch(cloudScriptUrl, {
-      method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'save', data: data, recovered: recovered })
-    });
-    document.getElementById('sync-indicator').innerText = '🟢 Data Backed Up!';
-    alert("Data cloud pe safe save ho gaya! ✅");
-  } catch(e) { alert("Backup failed!"); }
+function updateSyncIndicator() {
+  let ind = document.getElementById('sync-indicator');
+  if (cloudScriptUrl) {
+    ind.innerText = '🟢 Cloud Auto-Sync Active';
+    ind.style.color = 'var(--good)';
+  } else {
+    ind.innerText = '🟢 Local Storage Active (Offline)';
+    ind.style.color = 'var(--accent)';
+  }
 }
 
+// --- CLOUD SYNC ENGINE (AUTO RUNS ON SAVE) ---
 async function autoPushToCloud() {
   if(!cloudScriptUrl) return;
+  let ind = document.getElementById('sync-indicator');
+  ind.innerText = '⏳ Saving to Cloud...';
+  ind.style.color = 'var(--info)';
   try {
-    await fetch(cloudScriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save', data: data, recovered: recovered }) });
-  } catch(e) {}
+    await fetch(cloudScriptUrl, { 
+      method: 'POST', 
+      mode: 'no-cors', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ action: 'save', data: data, recovered: recovered }) 
+    });
+    ind.innerText = '🟢 Cloud Synced';
+    ind.style.color = 'var(--good)';
+  } catch(e) {
+    ind.innerText = '❌ Auto-Save Failed';
+    ind.style.color = 'var(--bad)';
+  }
+}
+
+async function pushToCloud() {
+  if(!cloudScriptUrl) { alert("Pehle Google Script URL daalo bhai."); return; }
+  await autoPushToCloud();
+  alert("Data cloud pe force save ho gaya! ✅");
 }
 
 async function syncWithCloud() {
   if(!cloudScriptUrl) { alert("Pehle URL daalo bhai."); return; }
+  let ind = document.getElementById('sync-indicator');
+  ind.innerText = '⏳ Loading from Cloud...';
   try {
     let response = await fetch(cloudScriptUrl + '?action=get');
     let resData = await response.json();
     if(resData && resData.data) {
-      if(confirm("Cloud data load karein? Local overwrite ho jayega.")) {
+      if(confirm("Cloud data load karein? Local screen ka data overwrite ho jayega.")) {
         data = resData.data; recovered = resData.recovered || 0;
         localStorage.setItem('udhar_v3', JSON.stringify({data,recovered}));
+        updateSyncIndicator();
         render();
+        alert("Cloud data successfully khinch liya gya! 🎉");
       }
-    }
-  } catch(e) { alert("Error pulling data!"); }
+    } else { alert("Cloud par koi data nahi mila."); updateSyncIndicator(); }
+  } catch(e) { 
+    alert("Error pulling data! Re-check URL."); 
+    updateSyncIndicator();
+  }
 }
 
 // --- STANDARD APP LOGIC ---
@@ -460,6 +487,7 @@ function renderMonthlyAnalysis() {
 function render(){
  document.getElementById('shopNameDisplay').innerText = shopName;
  document.getElementById('footerShopName').innerText = shopName;
+ updateSyncIndicator();
  renderMonthlyAnalysis();
  
  let html='';
