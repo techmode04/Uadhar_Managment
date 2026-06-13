@@ -183,9 +183,10 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
 .code-block-container { background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:12px; margin:10px 0; position:relative; }
 .code-block-container pre { margin:0; font-family:monospace; font-size:12px; color:var(--good); overflow-x:auto; white-space: pre-wrap; word-wrap: break-word; max-height:150px; }
 
-/* ⚠️ CHANGED: Camera Container square outer borders & bg color removed */
+/* Camera Container square outer borders & bg color removed */
 .camera-container { padding: 4px; margin-top: 14px; text-align: center; }
-#cameraVideo { width: 100%; max-width: 240px; border-radius: 8px; background: #000; transform: scaleX(-1); margin-top: 10px; }
+/* Camera preview style updated dynamically via JS for selfie mirroring */
+#cameraVideo { width: 100%; max-width: 240px; border-radius: 8px; background: #000; margin-top: 10px; }
 .photo-preview-wrap { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
 .captured-preview-img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 2px solid var(--accent); }
 
@@ -314,8 +315,12 @@ footer.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px}
   <input id="note" placeholder="e.g., 5 Pipe, 2 Box Nails, Paint brush">
   
   <div class="camera-container">
-    <div style="display:flex; justify-content:center; gap:10px;">
-      <button class="btn btn-info" type="button" onclick="startCamera()">📷 Open Mobile/PC Camera</button>
+    <div style="display:flex; justify-content:center; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+      <select id="cameraSelect" onchange="switchCamera()" style="width:auto; min-width:150px; padding:8px; display:inline-block;">
+        <option value="user">Front Camera (Selfie)</option>
+        <option value="environment" selected>Back Camera (Rear)</option>
+      </select>
+      <button class="btn btn-info" type="button" onclick="startCamera()">📷 Open Camera</button>
       <button class="btn btn-accent" type="button" id="snapBtn" onclick="capturePhoto()" style="display:none;">📸 Click Photo</button>
     </div>
     <video id="cameraVideo" autoplay playsinline style="display:none;"></video>
@@ -467,15 +472,39 @@ function closePrintModal() { document.getElementById('printModalOverlay').style.
 function closeBackupViewer() { document.getElementById('backupViewerSection').style.display = 'none'; }
 
 async function startCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+  }
+
   let video = document.getElementById('cameraVideo');
   let snapBtn = document.getElementById('snapBtn');
+  let selectedMode = document.getElementById('cameraSelect').value;
+
+  // Selfie camera mirror honi chahiye, back camera normal rehna chahiye
+  if (selectedMode === 'user') {
+    video.style.transform = 'scaleX(-1)';
+  } else {
+    video.style.transform = 'none';
+  }
+
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 320 }, audio: false });
+    cameraStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: selectedMode, width: 320, height: 320 }, 
+      audio: false 
+    });
     video.srcObject = cameraStream;
     video.style.display = 'inline-block';
     snapBtn.style.display = 'inline-block';
   } catch (err) {
-    alert("Camera chalu karne me dikkat aai bhai! Camera permission check karein.");
+    alert("Camera chalu karne me dikkat aai bhai! Camera permission aur options check karein.");
+  }
+}
+
+async function switchCamera() {
+  // Agar camera already open hai, toh live switch karega
+  let video = document.getElementById('cameraVideo');
+  if (video.style.display === 'inline-block') {
+    await startCamera();
   }
 }
 
@@ -484,6 +513,7 @@ function capturePhoto() {
   let previewWrap = document.getElementById('photoPreviewWrap');
   let imgContainer = document.getElementById('capturedImageContainer');
   let snapBtn = document.getElementById('snapBtn');
+  let selectedMode = document.getElementById('cameraSelect').value;
   
   if(!cameraStream) return;
   
@@ -492,8 +522,12 @@ function capturePhoto() {
   canvas.height = 160;
   let ctx = canvas.getContext('2d');
   
-  ctx.translate(canvas.width, 0);
-  ctx.scale(-1, 1);
+  // Selfie filter check canvas drawing ke liye
+  if (selectedMode === 'user') {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+  
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
   currentCapturedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
